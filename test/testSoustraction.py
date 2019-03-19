@@ -35,8 +35,30 @@ def substract3():
 	cv.imshow("test", resultS)
 	cv.waitKey(0)
 	
+def useCamera():
+	vidcap = cv.VideoCapture('film/test4.mp4')
+	success,image1 = vidcap.read()
+
+	fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+
+	while True:   
+		success,image2 = vidcap.read()
+
+		if not success:
+			break
+
+		result = image1-image2
+		fgmask = fgbg.apply(image1)
+		fgmask = fgbg.apply(image2)
+		
+		resultS = cv.resize(fgmask, (960, 740))  
+		cv.imshow("test", resultS)
+		cv.waitKey(10)
+
+		image1 = image2
 
 if __name__ == '__main__':
     #substract1()
-	substract2()
+	#substract2()
 	#substract3()
+	useCamera()
