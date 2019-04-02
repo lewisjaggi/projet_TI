@@ -107,7 +107,7 @@ def findgravityCenterMultipleBlob(image1, image2):
 
 	return thresh
 
-def findBasicCenter(image1, image2):
+def findBasicCenterMultiple(image1, image2):
 	fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
 
 	src1 = image1
@@ -135,9 +135,35 @@ def findBasicCenter(image1, image2):
 	
 	return thresh
 
+def findBasicCenterSingle(image1, image2):
+	fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+
+	src1 = image1
+	src2 = image2
+	
+	fgmask = fgbg.apply(src1)
+	fgmask = fgbg.apply(src2)
+	resultS = cv.resize(fgmask, (960, 740))
+
+	blurred = cv.GaussianBlur(resultS, (5, 5), 0)
+	thresh = cv.threshold(blurred, 100, 255, cv.THRESH_BINARY)[1]
+
+	cnts = cv.findContours(thresh.copy(), cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
+
+	M = cv.moments(cnts)
+	
+	if M["m00"] != 0:
+		cX = int(M["m10"] / M["m00"])
+		cY = int(M["m01"] / M["m00"])
+	else:
+		cX, cY = 0, 0
+	cv.circle(thresh, (cX, cY), 5, (100, 100, 100), -1)
+	
+	return thresh
+
 
 def testGravity():
-	vidcap = cv.VideoCapture('film/test4.mp4')
+	vidcap = cv.VideoCapture('film/test2_2.mp4')
 	success,image1 = vidcap.read()
 
 	fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
@@ -148,7 +174,7 @@ def testGravity():
 		if not success:
 			break
 
-		result = findBasicCenter(image1,image2)
+		result = findBasicCenterMultiple(image1,image2)
 		
 		resultS = cv.resize(result, (960, 740))  
 		cv.imshow("test", resultS)
