@@ -3,6 +3,8 @@ import numpy as np
 
 chessW = 8
 chessH = 6
+square_width = 4
+square_height = 4
 
 
 def get_first_frame(video_path):
@@ -16,7 +18,7 @@ def get_first_frame(video_path):
     return frame
 
 
-def findChess(img):
+def find_chess(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     objpoints = []
     imgpoints = []  # 2d points in image plane.
@@ -47,8 +49,7 @@ def findChess(img):
 
 if __name__ == '__main__':
     frame = get_first_frame('test/film/test1.mp4')
-    # cv.imshow('Frame', frame)
-    ret, corners, mtx, dist = findChess(frame)
+    ret, corners, mtx, dist = find_chess(frame)
     print(f"corners {type(mtx)}")
     p1 = corners[0]
     p2 = corners[chessH - 1]
@@ -70,5 +71,8 @@ if __name__ == '__main__':
     dst = cv.undistort(frame, mtx, dist, None)
     x, y, w, h = roi
     dst = dst[y:y + h, x:x + w]
+
+    pixel_by_cm = width_real_pixel/((chessW - 1)*square_width)
+    print(f"pixel by cm  : {pixel_by_cm}")
     cv.imshow('camera', dst)
     cv.waitKey(0)
