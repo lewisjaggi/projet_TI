@@ -48,5 +48,5 @@ def readVideo(video):
 		cv.waitKey(5)
 
 if __name__ == '__main__':
-	readVideo('film/test2_3.mp4')
+	readVideo('test/film/test2_1.mp4')
 
