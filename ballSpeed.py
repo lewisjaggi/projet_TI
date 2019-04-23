@@ -92,8 +92,8 @@ def findBallCenterFromColor(image, lower, upper):
 def readVideo(video, dist_pixel):
 	vidcap = cv.VideoCapture(video)
 	# HSV colors
-	redLower = (0, 80, 30)
-	redUpper = (60, 255, 255)
+	redLower = (0, 150, 70)
+	redUpper = (25, 255, 255)
 
 	previouscenter = None
 	distance = 0
@@ -104,19 +104,16 @@ def readVideo(video, dist_pixel):
 	while True:   
 		success,image = vidcap.read()
 
-
 		if not success:
 			break
 
 		center = findBallCenterFromColor(image,redLower,redUpper)
 
-		if previouscenter:
+		if previouscenter and center:
 			distance = sqrt((center[0] - previouscenter[0])**2 + (center[1] - previouscenter[1])**2) / dist_pixel
 			vitesse = distance * fps
-		
-		if center:
 			cv.circle(image, center, 5, (0, 0, 255), -1)
-			cv.putText(image,vitesse.__str__(),(10,500), cv.FONT_HERSHEY_COMPLEX, 4, (255,255,255), 2, cv.LINE_AA)
+			cv.putText(image,"{:.2f} cm/s".format(vitesse),(10,100), cv.FONT_HERSHEY_COMPLEX, 4, (255,255,255), 2, cv.LINE_AA)
 
 		result = cv.resize(image, (960, 740))  
 		cv.imshow("test", result)
