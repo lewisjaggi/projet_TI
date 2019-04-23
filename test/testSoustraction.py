@@ -240,7 +240,7 @@ def findBallCenterFromColor(image, lower, upper):
 	return frame
 
 def final():
-	vidcap = cv.VideoCapture('film/test2_3.mp4')
+	vidcap = cv.VideoCapture('film/testdouble.mp4')
 	# HSV colors
 	redLower = (0, 80, 30)
 	redUpper = (60, 255, 255)
