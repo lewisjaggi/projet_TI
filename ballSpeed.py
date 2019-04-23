@@ -122,7 +122,7 @@ def readVideo(video, dist_pixel):
 		previouscenter = center
 
 if __name__ == '__main__':
-	video = 'test/film/test2_1.mp4'
+	video = 'film/test2_1.mp4'
 
 	frame = get_first_frame(video)
 	ret, corners, mtx, dist = find_chess(frame)
