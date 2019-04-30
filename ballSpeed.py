@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import cv2 as cv
-import numpy as np
-import imutils
 from math import sqrt
+
+import cv2 as cv
+import imutils
+import numpy as np
 
 chessW = 8
 chessH = 6
@@ -24,8 +25,8 @@ def get_first_frame(video_path):
 
 def find_chess(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    objpoints = []
-    imgpoints = []  # 2d points in image plane.
+    obj_points = []
+    img_points = []  # 2d points in image plane.
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
     objp = np.zeros((chessW * chessH, 3), np.float32)
     objp[:, :2] = np.mgrid[0:chessH, 0:chessW].T.reshape(-1, 2)
@@ -35,11 +36,11 @@ def find_chess(img):
 
     # If found, add object points, image points (after refining them)
     if ret:
-        objpoints.append(objp)
+        obj_points.append(objp)
         cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-        imgpoints.append(corners)
+        img_points.append(corners)
 
-    ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+    ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(obj_points, img_points, gray.shape[::-1], None, None)
     return ret, corners, mtx, dist
 
 
@@ -65,68 +66,65 @@ def get_dist_pixel(corners):
 
     return sum(l_pixel_by_cm) / len(l_pixel_by_cm)
 
-def findBallCenterFromColor(image, lower, upper):
-	blurred = cv.GaussianBlur(image, (11, 11), 0)
-	hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
- 
-	mask = cv.inRange(hsv, lower, upper)
-	mask = cv.erode(mask, None, iterations=2)
-	mask = cv.dilate(mask, None, iterations=2)
 
-	cnts = cv.findContours(mask.copy(), cv.RETR_EXTERNAL,
-		cv.CHAIN_APPROX_SIMPLE)
-	cnts = imutils.grab_contours(cnts)
-	center = None
- 
-	if len(cnts) > 0:
-		c = max(cnts, key=cv.contourArea)
-		((x, y), radius) = cv.minEnclosingCircle(c)
-		M = cv.moments(c)
-		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
- 
-		if radius > 10:
-			return center
- 
-	return None
+def find_ball_center_from_color(image, lower, upper):
+    blurred = cv.GaussianBlur(image, (11, 11), 0)
+    hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
 
-def readVideo(video, dist_pixel):
-	vidcap = cv.VideoCapture(video)
-	# HSV colors
-	redLower = (0, 150, 70)
-	redUpper = (25, 255, 255)
+    mask = cv.inRange(hsv, lower, upper)
+    mask = cv.erode(mask, None, iterations=2)
+    mask = cv.dilate(mask, None, iterations=2)
 
-	previouscenter = None
-	distance = 0
-	vitesse = 0
+    cnts = cv.findContours(mask.copy(), cv.RETR_EXTERNAL,
+                           cv.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
 
-	fps = vidcap.get(cv.CAP_PROP_FPS)
-	
-	while True:   
-		success,image = vidcap.read()
+    if len(cnts) > 0:
+        c = max(cnts, key=cv.contourArea)
+        ((x, y), radius) = cv.minEnclosingCircle(c)
+        m = cv.moments(c)
+        center = (int(m["m10"] / m["m00"]), int(m["m01"] / m["m00"]))
+        if radius > 10:
+            return center
+    return None
 
-		if not success:
-			break
 
-		center = findBallCenterFromColor(image,redLower,redUpper)
+def read_video(video, dist_pixel):
+    vidcap = cv.VideoCapture(video)
+    # HSV colors
+    red_lower = (0, 150, 70)
+    red_upper = (25, 255, 255)
 
-		if previouscenter and center:
-			distance = sqrt((center[0] - previouscenter[0])**2 + (center[1] - previouscenter[1])**2) / dist_pixel
-			vitesse = distance * fps
-			cv.circle(image, center, 5, (0, 0, 255), -1)
-			cv.putText(image,"{:.2f} cm/s".format(vitesse),(10,100), cv.FONT_HERSHEY_COMPLEX, 4, (255,255,255), 2, cv.LINE_AA)
+    previous_center = None
 
-		result = cv.resize(image, (960, 740))  
-		cv.imshow("test", result)
-		cv.waitKey(5)
+    fps = vidcap.get(cv.CAP_PROP_FPS)
 
-		previouscenter = center
+    while True:
+        success, image = vidcap.read()
+
+        if not success:
+            break
+
+        center = find_ball_center_from_color(image, red_lower, red_upper)
+
+        if previous_center and center:
+            distance = sqrt((center[0] - previous_center[0]) ** 2 + (center[1] - previous_center[1]) ** 2) / dist_pixel
+            vitesse = distance * fps
+            cv.circle(image, center, 5, (0, 0, 255), -1)
+            cv.putText(image, "{:.2f} cm/s".format(vitesse), (10, 100), cv.FONT_HERSHEY_COMPLEX, 4, (255, 255, 255), 2,
+                       cv.LINE_AA)
+
+        result = cv.resize(image, (960, 740))
+        cv.imshow("test", result)
+        cv.waitKey(5)
+        previous_center = center
+
 
 if __name__ == '__main__':
-	video = 'film/test2_1.mp4'
+    video = 'film/test2_1.mp4'
 
-	frame = get_first_frame(video)
-	ret, corners, mtx, dist = find_chess(frame)
-	dist_pixel = get_dist_pixel(corners)
+    frame = get_first_frame(video)
+    ret, corners, mtx, dist = find_chess(frame)
+    dist_pixel = get_dist_pixel(corners)
 
-	readVideo(video, dist_pixel)
-
+    read_video(video, dist_pixel)
