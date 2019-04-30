@@ -2,6 +2,7 @@
 
 from math import sqrt
 
+import sys
 import cv2 as cv
 import imutils
 import numpy as np
@@ -121,10 +122,22 @@ def read_video(video, dist_pixel):
 
 
 if __name__ == '__main__':
-    video = 'film/test2_1.mp4'
+    video = ''
+    if len(sys.argv) == 1:
+        video = 'film/test2_1.mp4'
+    elif len(sys.argv) == 2:
+        video = sys.argv[1]
 
-    frame = get_first_frame(video)
-    ret, corners, mtx, dist = find_chess(frame)
-    dist_pixel = get_dist_pixel(corners)
+    try:
+        frame = get_first_frame(video)
+        ret, corners, mtx, dist = find_chess(frame)
+        dist_pixel = get_dist_pixel(corners)
 
-    read_video(video, dist_pixel)
+        read_video(video, dist_pixel)
+    except:
+        print("can't read file")
+    
+
+    
+
+    
