@@ -12,6 +12,8 @@ chessH = 6
 square_width = 4
 square_height = 4
 
+show_graph = False
+
 
 def get_first_frame(video_path):
     movie = cv.VideoCapture(video_path)
@@ -100,6 +102,8 @@ def read_video(video, dist_pixel):
 
     fps = vidcap.get(cv.CAP_PROP_FPS)
 
+    speed_time = []
+
     while True:
         success, image = vidcap.read()
 
@@ -111,6 +115,7 @@ def read_video(video, dist_pixel):
         if previous_center and center:
             distance = sqrt((center[0] - previous_center[0]) ** 2 + (center[1] - previous_center[1]) ** 2) / dist_pixel
             vitesse = distance * fps
+            speed_time.append(vitesse)
             cv.circle(image, center, 5, (0, 0, 255), -1)
             cv.putText(image, "{:.2f} cm/s".format(vitesse), (10, 100), cv.FONT_HERSHEY_COMPLEX, 4, (255, 255, 255), 2,
                        cv.LINE_AA)
@@ -120,6 +125,12 @@ def read_video(video, dist_pixel):
         cv.waitKey(5)
         previous_center = center
 
+    if show_graph:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        ax.plot([fps * i for i in range(len(speed_time))], speed_time)
+        plt.show()
+
 
 if __name__ == '__main__':
     video = ''
@@ -127,6 +138,9 @@ if __name__ == '__main__':
         video = 'film/test2_1.mp4'
     elif len(sys.argv) == 2:
         video = sys.argv[1]
+    elif len(sys.argv) == 3:
+        video = sys.argv[1]
+        show_graph = True
 
     try:
         frame = get_first_frame(video)
