@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import sys
 from math import sqrt
 
-import sys
 import cv2 as cv
 import imutils
 import numpy as np
@@ -150,8 +150,3 @@ if __name__ == '__main__':
         read_video(video, dist_pixel)
     except:
         print("can't read file")
-    
-
-    
-
-    
